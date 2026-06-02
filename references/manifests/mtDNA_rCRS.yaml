@@ -1,0 +1,7 @@
+id: mtDNA_rCRS
+aliases: [rCRS]
+version: "NC_012920.1"
+source: "NCBI"
+status: missing
+contig_style: chrM
+mitochondrial_contig: chrM

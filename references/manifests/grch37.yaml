@@ -1,0 +1,7 @@
+id: GRCh37_legacy
+aliases: [grch37, hg19]
+version: "GRCh37"
+source: "https://www.ncbi.nlm.nih.gov/grc/human"
+status: missing
+contig_style: numeric
+mitochondrial_contig: MT

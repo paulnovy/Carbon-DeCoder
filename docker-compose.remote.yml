@@ -1,0 +1,62 @@
+# Remote deployment override for a host-mounted data deployment.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.remote.yml up -d
+services:
+  api:
+    environment:
+      - WGS_API_HOST=0.0.0.0
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - SSH_AUTHORIZED_KEYS=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICUpVyjJzrRm0WUjSs//Pz+Gr7PdWFFFBkD/bgx9pWLN wgs-deploy@openclaw
+    ports:
+      - "0.0.0.0:8000:8000"
+      - "0.0.0.0:2222:2222"
+    volumes:
+      - ${WGS_INPUT_DIR:-./data/input}:/data/input
+      - data_config:/data/config
+      - ${WGS_TAXONOMY_DB_DIR:-./data/taxonomy/kraken2}:/data/databases/kraken2
+      - ${WGS_REFERENCES_DIR:-./data/references}:/data/references
+
+  worker:
+    volumes:
+      - data_results:/data/results
+      - ${WGS_REFERENCES_DIR:-./data/references}:/data/references
+      - data_logs:/data/logs
+      - ${WGS_INPUT_DIR:-./data/input}:/data/input
+      - data_config:/data/config
+      - ${WGS_TAXONOMY_DB_DIR:-./data/taxonomy/kraken2}:/data/databases/kraken2
+      - ./scripts:/app/scripts:ro
+      - ./pipelines:/app/pipelines:ro
+
+  nextflow-runner:
+    volumes:
+      - ./:/workspace
+      - data_fastq:/data/fastq
+      - ${WGS_REFERENCES_DIR:-./data/references}:/data/references
+      - data_results:/data/results
+      - data_nextflow_work:/data/nf-cache
+
+  reference-manager:
+    volumes:
+      - ./:/workspace
+      - ${WGS_REFERENCES_DIR:-./data/references}:/data/references
+
+  frontend:
+    build:
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=${REMOTE_API_BASE_URL:-}
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=${REMOTE_API_BASE_URL:-}
+    ports:
+      - "0.0.0.0:3000:3000"
+
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  minio:
+    ports:
+      - "0.0.0.0:9000:9000"
+      - "0.0.0.0:9001:9001"

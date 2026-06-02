@@ -1,0 +1,173 @@
+openapi: 3.1.0
+info:
+  title: WGS Cockpit API
+  version: 0.8.7
+paths:
+  /health:
+    get: { summary: Health probe, responses: { '200': { description: OK } } }
+  /version:
+    get: { summary: Service version and database schema marker, responses: { '200': { description: Version } } }
+  /references:
+    get: { summary: List reference genome profiles, responses: { '200': { description: List } } }
+  /references/{reference_id}/compatibility:
+    get: { summary: Check contig-style compatibility for selected reference profile, responses: { '200': { description: Compatibility status } } }
+  /references/download:
+    post: { summary: Trigger reference download, responses: { '200': { description: Accepted } } }
+  /references/index:
+    post: { summary: Trigger reference indexing, responses: { '200': { description: Accepted } } }
+  /data/capabilities:
+    get: { summary: Runtime bioinformatics tool capability inventory, responses: { '200': { description: Tool capability details } } }
+  /data/taxonomy-databases:
+    get: { summary: List Kraken2 taxonomy databases with install/storage preflight, responses: { '200': { description: Taxonomy database list } } }
+    post: { summary: Register custom taxonomy database metadata, responses: { '200': { description: Taxonomy database registered } } }
+  /data/taxonomy-databases/install:
+    post: { summary: Start taxonomy database download/install with storage guard, responses: { '200': { description: Install job accepted }, '507': { description: Insufficient storage } } }
+  /data/taxonomy-databases/install/{job_id}:
+    get: { summary: Get taxonomy database install job status, responses: { '200': { description: Install job status } } }
+  /data/taxonomy-databases/{db_id}:
+    delete: { summary: Remove taxonomy database metadata/files, responses: { '200': { description: Removed taxonomy database } } }
+  /pipeline/settings:
+    get: { summary: Get pipeline backend/resource/executor policy, responses: { '200': { description: Pipeline settings } } }
+    put: { summary: Update pipeline backend/resource/taxonomy settings, responses: { '200': { description: Updated pipeline settings } } }
+  /projects:
+    get: { summary: List projects, responses: { '200': { description: List } } }
+    post: { summary: Create project, responses: { '200': { description: Created } } }
+  /projects/{project_id}:
+    get: { summary: Get project, responses: { '200': { description: Project } } }
+  /projects/{project_id}/samples:
+    post: { summary: Create sample in project, responses: { '200': { description: Created } } }
+  /projects/{project_id}/run/{mode}:
+    post: { summary: Create run for sample, responses: { '200': { description: Run queued } } }
+  /projects/{project_id}/run/qc:
+    post: { summary: Create QC run, responses: { '200': { description: Run queued } } }
+  /projects/{project_id}/run/full:
+    post: { summary: Create full run, responses: { '200': { description: Run queued } } }
+  /projects/{project_id}/run/benchmark:
+    post: { summary: Create benchmark run, responses: { '200': { description: Run queued } } }
+  /runs/{run_id}:
+    get: { summary: Get run details, responses: { '200': { description: Run } } }
+  /runs/{run_id}/provenance:
+    post: { summary: Update run provenance/reproducibility metadata, responses: { '200': { description: Updated run } } }
+  /runs/{run_id}/reports:
+    post: { summary: Generate one report artifact for run, responses: { '200': { description: Report artifact } } }
+    get: { summary: List report artifacts for run, responses: { '200': { description: Report list } } }
+  /runs/{run_id}/reports/generate:
+    post: { summary: Generate one report artifact and materialize HTML/JSON/Parquet files, responses: { '200': { description: Generated report } } }
+  /runs/{run_id}/reports/generate-all:
+    post: { summary: Generate full technical report bundle, materialize HTML/JSON/Parquet files, and emit bundle manifest/index paths, responses: { '200': { description: Generated report bundle } } }
+  /runs/{run_id}/reports/bundle:
+    get: { summary: Get generated report bundle metadata/status, responses: { '200': { description: Report bundle metadata } } }
+  /runs/{run_id}/reports/bundle/files:
+    get: { summary: Get generated report bundle file-existence matrix, responses: { '200': { description: Report bundle file status } } }
+  /runs/{run_id}/reports/bundle/verify:
+    get: { summary: Verify generated report bundle files against manifest checksums, responses: { '200': { description: Report bundle verification status } } }
+  /runs/{run_id}/reports/bundle/repair:
+    post: { summary: Repair generated report bundle files and refresh manifest/index, responses: { '200': { description: Report bundle repair status } } }
+  /runs/{run_id}/events:
+    get: { summary: Get run event stream snapshot, responses: { '200': { description: Events } } }
+  /runs/{run_id}/steps:
+    get: { summary: Get run step timeline snapshot, responses: { '200': { description: Steps } } }
+  /runs/{run_id}/logs:
+    get: { summary: Get run logs snapshot, responses: { '200': { description: Logs } } }
+  /runs/{run_id}/pipeline/start:
+    post: { summary: Start, resume, or stage-plan a pipeline run, responses: { '200': { description: Pipeline dispatch accepted } } }
+  /runs/{run_id}/multiqc:
+    get: { summary: Get MultiQC artifact status for run, responses: { '200': { description: MultiQC report pointer with available or missing status } } }
+  /runs/{run_id}/qc/import:
+    post: { summary: Import QC artifacts into run summary, responses: { '200': { description: Imported QC } } }
+  /runs/{run_id}/alignment/import:
+    post: { summary: Import alignment metrics payload for run (optional flagstat/idxstats parsers), responses: { '200': { description: Imported alignment metrics } } }
+  /runs/{run_id}/coverage/import:
+    post: { summary: Import coverage metrics payload (strict mosdepth summary + optional regions BED for tile materialization), responses: { '200': { description: Imported coverage metrics } } }
+  /runs/{run_id}/variants/import:
+    post: { summary: Import variant calls payload for run (replace/append, optional VCF parser), responses: { '200': { description: Imported variants } } }
+  /runs/{run_id}/sv/import:
+    post: { summary: Import structural variants payload for run (replace/append, optional Manta/Delly SV VCF parser), responses: { '200': { description: Imported SV } } }
+  /runs/{run_id}/cnv/import:
+    post: { summary: Import CNV segments payload for run (replace/append, optional generic/gCNV/CNVnator parser), responses: { '200': { description: Imported CNV } } }
+  /runs/{run_id}/mtdna/import:
+    post: { summary: Import mtDNA result payload for run (optional report-file parser), responses: { '200': { description: Imported mtDNA result } } }
+  /runs/{run_id}/prs/import:
+    post: { summary: Import PRS result payload for run (optional result-file parser), responses: { '200': { description: Imported PRS result } } }
+  /runs/{run_id}/taxonomy/import:
+    post: { summary: Import taxonomy hits payload for run (replace/append, optional taxonomy report parser), responses: { '200': { description: Imported taxonomy hits } } }
+  /runs/{run_id}/ingest:
+    post: { summary: Auto-ingest hook for worker stage payloads, responses: { '200': { description: Ingest accepted } } }
+  /runs/{run_id}/benchmark/import:
+    post: { summary: Import benchmark metrics and compute regression alert (optional benchmark report parser), responses: { '200': { description: Imported benchmark } } }
+  /runs/{run_id}/validation/vendor-assembly/compare:
+    post: { summary: Compute vendor-assembly concordance preview for run (no persistence, proxy|kmer|exact, optional kmer_size), responses: { '200': { description: Vendor-assembly compare preview } } }
+  /runs/{run_id}/validation/vendor-assembly/compare-kmer-sweep:
+    post: { summary: Compute vendor-assembly kmer sweep preview for run (no persistence, includes recommended_kmer_size), responses: { '200': { description: Vendor-assembly kmer sweep preview } } }
+  /runs/{run_id}/validation/vendor-assembly/recommendation:
+    post: { summary: Compute recommended comparator configuration for vendor-assembly validation, responses: { '200': { description: Vendor-assembly comparator recommendation } } }
+  /runs/{run_id}/validation/vendor-vcf/compare:
+    post: { summary: Compare vendor VCF against pipeline VCF and optionally import acceptance evidence, responses: { '200': { description: Vendor VCF comparison } } }
+  /runs/{run_id}/validation/vendor-assembly/import:
+    post: { summary: Import vendor-assembly acceptance validation for run (optional report parser + comparator_method proxy|kmer|exact + optional kmer_size), responses: { '200': { description: Imported vendor-assembly validation } } }
+  /runs/{run_id}/validation/vendor-assembly/import-from-fastq:
+    post: { summary: Build pipeline assembly from sample FASTQ paths and import vendor-assembly validation, responses: { '200': { description: Imported vendor-assembly validation from FASTQ } } }
+  /runs/{run_id}/validation/vendor-assembly/e2e-from-fastq:
+    post: { summary: Execute one-shot vendor-assembly validation flow from sample FASTQ (import + optional reports + gate), responses: { '200': { description: Vendor-assembly E2E from FASTQ } } }
+  /validation/vendor-assembly/e2e-from-fastq:
+    post: { summary: Execute global one-shot vendor-assembly E2E from FASTQ with project/sample/run bootstrap, responses: { '200': { description: Vendor-assembly global E2E from FASTQ } } }
+  /runs/{run_id}/validation/vendor-assembly/latest:
+    get: { summary: Get latest vendor-assembly acceptance validation for run, responses: { '200': { description: Latest vendor-assembly validation } } }
+  /runs/{run_id}/validation/vendor-assembly/history:
+    get: { summary: Get vendor-assembly acceptance validation history for run, responses: { '200': { description: Vendor-assembly run validation history } } }
+  /runs/{run_id}/validation/vendor-assembly/gate:
+    get: { summary: Get run-level vendor-assembly validation gate status, responses: { '200': { description: Vendor-assembly run gate } } }
+  /runs/{run_id}/dark-matter/unknown-reads/import:
+    post: { summary: Import unknown-read collection metrics and artifacts, responses: { '200': { description: Imported unknown reads } } }
+  /samples/{sample_id}/qc-summary:
+    get: { summary: Get QC summary, responses: { '200': { description: QC } } }
+  /samples/{sample_id}/coverage-summary:
+    get: { summary: Get imported coverage summary, responses: { '200': { description: Coverage summary } } }
+  /samples/{sample_id}/coverage-tiles:
+    get: { summary: Get materialized coverage tiles or summary-only state when regions are missing, responses: { '200': { description: Coverage tiles } } }
+  /samples/{sample_id}/coverage-terrain:
+    get: { summary: Get low/high coverage anomaly overlay, responses: { '200': { description: Coverage terrain overlay } } }
+  /samples/{sample_id}/variants:
+    get: { summary: List sample variants with trust metadata, responses: { '200': { description: Variant list } } }
+  /samples/{sample_id}/caller-agreement:
+    get: { summary: Caller agreement overview and buckets, responses: { '200': { description: Caller agreement } } }
+  /samples/{sample_id}/caller-disagreement:
+    get: { summary: Caller disagreement hotspot list, responses: { '200': { description: Caller disagreement list } } }
+  /samples/{sample_id}/caller-disagreement-overlay:
+    get: { summary: Caller disagreement genomic-bin overlay, responses: { '200': { description: Caller disagreement overlay } } }
+  /samples/{sample_id}/sv:
+    get: { summary: List imported structural variants, responses: { '200': { description: SV list } } }
+  /samples/{sample_id}/cnv:
+    get: { summary: List imported CNV segments, responses: { '200': { description: CNV list } } }
+  /samples/{sample_id}/mtdna:
+    get: { summary: List imported mtDNA results and warnings, responses: { '200': { description: mtDNA result } } }
+  /samples/{sample_id}/prs:
+    get: { summary: List imported PRS results and non-diagnostic caveats, responses: { '200': { description: PRS result } } }
+  /samples/{sample_id}/taxonomy:
+    get: { summary: List imported taxonomy/non-human read classifications, responses: { '200': { description: Taxonomy hits } } }
+  /samples/{sample_id}/dark-matter/report:
+    get: { summary: Get conservative unknown-read/dark-matter report, responses: { '200': { description: Dark matter report } } }
+  /samples/{sample_id}/benchmark-history:
+    get: { summary: Benchmark history for sample, responses: { '200': { description: Benchmark history } } }
+  /samples/{sample_id}/vendor-assembly-validations:
+    get: { summary: Vendor-assembly acceptance validation history for sample, responses: { '200': { description: Validation history } } }
+  /samples/{sample_id}/vendor-assembly-validation-summary:
+    get: { summary: Vendor-assembly acceptance validation aggregate summary for sample, responses: { '200': { description: Validation aggregate summary } } }
+  /samples/{sample_id}/vendor-assembly-validation-gate:
+    get: { summary: Vendor-assembly acceptance validation gate status for sample, responses: { '200': { description: Validation gate status } } }
+  /variants/{variant_id}:
+    get: { summary: Get single variant detail, responses: { '200': { description: Variant detail } } }
+  /samples/{sample_id}/trust-map:
+    get: { summary: Get trust map with explainability factors, responses: { '200': { description: Trust map } } }
+  /benchmarks/{benchmark_id}:
+    get: { summary: Get benchmark details/history and regression alert, responses: { '200': { description: Benchmark detail } } }
+  /reports/{report_id}:
+    get: { summary: Get report artifact metadata, responses: { '200': { description: Report } } }
+  /events/stream:
+    get: { summary: SSE event stream, responses: { '200': { description: Event stream } } }
+  /v1/input/validate:
+    post: { summary: Validate FASTQ input + preflight, responses: { '200': { description: Validation } } }
+  /v1/samples/{sample_id}/trust-map:
+    get: { summary: Trust layer map for a sample, responses: { '200': { description: Trust map } } }
+  /v1/benchmarks/{benchmark_id}:
+    get: { summary: Benchmark details, responses: { '200': { description: Benchmark data } } }

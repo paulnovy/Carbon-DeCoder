@@ -1,0 +1,143 @@
+services:
+  api:
+    init: true
+    build:
+      context: ./apps/api
+    image: wgs-cockpit-api:0.8.7
+    env_file: .env
+    environment:
+      RUNNING_IN_DOCKER: "1"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      WGS_PIPELINE_EXECUTOR: "${WGS_PIPELINE_EXECUTOR:-api_thread}"
+      WGS_COMPUTE_PROFILE: "${WGS_COMPUTE_PROFILE:-auto}"
+      WGS_PIPELINE_THREADS: "${WGS_PIPELINE_THREADS:-}"
+      REDIS_URL: "redis://redis:6379/0"
+      WGS_PIPELINE_JOB_QUEUE: "wgs:pipeline:jobs"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - data_results:/data/results
+      - data_references:/data/references
+      - data_logs:/data/logs
+      - data_input:/data/input
+      - data_config:/data/config
+      - data_taxonomy_db:/data/databases/kraken2
+      - ./scripts:/app/scripts:ro
+      - ./pipelines:/app/pipelines:ro
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    init: true
+    build:
+      context: ./apps/frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: "${NEXT_PUBLIC_API_BASE_URL:-}"
+    image: wgs-cockpit-frontend:0.8.7
+    env_file: .env
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    init: true
+    build:
+      context: ./apps/api
+    image: wgs-cockpit-api:0.8.7
+    command: ["python", "-m", "app.worker_queue"]
+    env_file: .env
+    environment:
+      WGS_API_BASE_URL: "http://api:8000"
+      REDIS_URL: "redis://redis:6379/0"
+      WGS_PIPELINE_JOB_QUEUE: "wgs:pipeline:jobs"
+      WGS_WORKER_PIPELINE_QUEUE_ENABLED: "${WGS_WORKER_PIPELINE_QUEUE_ENABLED:-false}"
+      WGS_COMPUTE_PROFILE: "${WGS_COMPUTE_PROFILE:-auto}"
+      WGS_PIPELINE_THREADS: "${WGS_PIPELINE_THREADS:-}"
+    volumes:
+      - data_results:/data/results
+      - data_references:/data/references
+      - data_logs:/data/logs
+      - data_input:/data/input
+      - data_config:/data/config
+      - data_taxonomy_db:/data/databases/kraken2
+      - ./scripts:/app/scripts:ro
+      - ./pipelines:/app/pipelines:ro
+    depends_on:
+      - api
+      - redis
+      - postgres
+
+  postgres:
+    image: postgres:16.3-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2.5-alpine
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-18T16-25-55Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  nextflow-runner:
+    image: nextflow/nextflow:24.10.0
+    working_dir: /workspace
+    profiles: ["pipeline"]
+    volumes:
+      - ./:/workspace
+      - data_fastq:/data/fastq
+      - data_references:/data/references
+      - data_results:/data/results
+      - data_nextflow_work:/data/nf-cache
+
+  reference-manager:
+    image: python:3.12-slim
+    working_dir: /workspace
+    profiles: ["pipeline"]
+    command: ["python", "references/scripts/validate_reference.py", "--help"]
+    volumes:
+      - ./:/workspace
+      - data_references:/data/references
+
+volumes:
+  postgres_data:
+  minio_data:
+  data_fastq:
+  data_results:
+  data_references:
+  data_nextflow_work:
+  data_taxonomy_db:
+  data_logs:
+  data_input:
+  data_config:

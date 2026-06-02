@@ -1,0 +1,7 @@
+id: T2T_CHM13v2_hs1
+aliases: [t2t, chm13]
+version: "v2.0"
+source: "https://github.com/marbl/CHM13"
+status: missing
+contig_style: chr
+mitochondrial_contig: chrM

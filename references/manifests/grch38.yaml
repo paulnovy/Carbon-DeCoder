@@ -1,0 +1,7 @@
+id: GRCh38_standard
+aliases: [grch38, hg38]
+version: "GRCh38"
+source: "https://www.ncbi.nlm.nih.gov/grc/human"
+status: missing
+contig_style: chr
+mitochondrial_contig: chrM

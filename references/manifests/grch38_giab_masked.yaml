@@ -1,0 +1,7 @@
+id: GRCh38_GIAB_masked_false_duplications
+aliases: [grch38_giab_masked]
+version: "GRCh38+GIAB-mask"
+source: "GIAB/NIST"
+status: missing
+contig_style: chr
+mitochondrial_contig: chrM
