@@ -20,7 +20,11 @@ Carbon DeCoder is a local-first, research-only whole genome sequencing cockpit f
 - IGV.js genome browser with BAM/VCF/coverage discovery
 - Fast ClinVar Screening from run-scoped BAM-screen artifacts before full variant calling is ready
 
-Still gated:
+## Interface Preview
+
+![Coverage terrain view](apps/frontend/public/brand/carbon-decoder-coverage-screenshot.jpg)
+
+## Still Gated
 
 - full ClinVar annotation over complete variant calls
 - broad SV/CNV validation
