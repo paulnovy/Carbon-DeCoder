@@ -6,6 +6,10 @@ Carbon DeCoder is a local-first, research-only whole genome sequencing cockpit f
 
 > Research only / non-diagnostic. Carbon DeCoder does not provide medical diagnosis, clinical recommendations, or automatic pathogenicity conclusions. Human review, provenance checks, and independent validation remain required.
 
+## Licence
+
+Carbon DeCoder is licensed under `AGPL-3.0-or-later`. See `LICENSE` for the full licence text and `LICENCES.md` for third-party backend, pipeline, runtime, frontend, and reference-data notices.
+
 ## Current Baseline
 
 - project, sample, run, reference, data import, and report bundle APIs

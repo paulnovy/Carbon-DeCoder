@@ -2,6 +2,7 @@
   "name": "wgs-cockpit-frontend",
   "version": "0.8.7",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
